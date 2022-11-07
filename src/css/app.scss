@@ -1,0 +1,12 @@
+// app global css in SCSS form
+// 'https://fonts.googleapis.com/css2?family=Montserrat:wght@100&display=swap'
+
+@font-face {
+  font-family: 'Poppins', sans-serif;
+  src: url('https://fonts.googleapis.com/css2?family=Poppins:wght@100&display=swap');
+}
+
+// declare a class which applies it
+.my-font {
+  font-family: 'Poppins', sans-serif;
+}

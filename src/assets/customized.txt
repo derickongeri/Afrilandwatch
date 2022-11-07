@@ -1,0 +1,385 @@
+
+//baselayers.js
+
+
+import L from "leaflet";
+export default {
+
+    osm : L.tileLayer(
+       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+       {
+         maxZoom: 19,
+         attribution:
+           '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+       }
+     ),
+     
+
+
+     mapbox : L.tileLayer(
+       "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+       {
+         attribution:
+           'Map data (c) <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
+         // maxZoom: 18,
+         id: "mapbox/streets-v11",
+         accessToken:
+           "pk.eyJ1IjoiY2hyaXNiYXJ0IiwiYSI6ImNrZTFtb3Z2bDAweTMyem1zcmthMGY0ejQifQ.3PzoCgSiG-1-sV1qJvO9Og",
+       }
+     ),
+  
+     mapboxSatellite: L.tileLayer(
+       "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}{r}?access_token={accessToken}",
+       {
+         attribution:
+           'Map data (c) <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
+
+         id: "mapbox/satellite-v9",
+         accessToken:
+           "pk.eyJ1IjoiY2hyaXNiYXJ0IiwiYSI6ImNrZTFtb3Z2bDAweTMyem1zcmthMGY0ejQifQ.3PzoCgSiG-1-sV1qJvO9Og",
+       }
+     ),
+
+
+
+
+   
+
+     
+
+  
+  
+}
+// export default{
+//   stamenLayer:  L.tileLayer('//stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
+//     attribution:
+//     'Map tiles by <a href="http://stamen.com">Stamen Design</a>, ' +
+//     '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; ' +
+//     'Map data {attribution.OpenStreetMap}',
+  
+    
+   
+// }),
+// osmLayer : L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+//   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  
+// }),
+// }
+
+
+
+
+
+////////////////////////////////////////////////+++++++++++++++++++++++++++++++++
+
+<template>
+  <div id="app" style="height: 100vh; width: 100vw">
+    <input type="text" name="" id="test" placeholder="Search Facilities">
+   
+      <!-- <input type="text" name="facility" id="facility"  placeholder="Search Facilities..." >   @subcounty_filtered_data="handle_subcounty_data" -->
+      
+    
+
+    <div class="snakebite-logo">
+      <span class="logo-info">Kenya Snakebite Information Platform</span>
+       <img class="snake-logo" src='./assets/images/snakelogo.svg' alt="">
+    </div>
+      
+    <div id="map" style="height: 98vh; width: 100%; ">
+
+    <div class="map_controls">
+       <div class="zoomin_tool">
+      <img src="./assets/images/zoom_in.svg" alt="" title="Zoom in"  @click="zoom_in" >
+    </div>
+
+     <div class="zoomout_tool">
+      <img src="./assets/images/zoom_out.svg" alt="" title="Zoom out" @click=" zoom_out">
+    </div>
+
+    <div class="basemaps">
+      <img src="./assets/images/layers2.svg" alt=""
+      @mouseover="base_map_ctrl_selections = true"
+        @mouseleave="handle_baseLayers"
+      
+      >
+    </div>
+
+    <div class="download">
+       <img src="./assets/images/download.svg" alt="" title="Download map" >
+
+    </div>
+
+
+     <div
+      class="base_map_ctrl_selections"
+      v-if="base_map_ctrl_selections"
+      @mouseover="
+      (base_map_ctrl_selections = true), (base_map_ctrl_cliked = true)
+      "
+      @mouseleave="
+        (base_map_ctrl_selections = false), (base_map_ctrl_cliked = false)
+      "
+    > 
+    
+      <div v-for="base_map in Object.keys(baseMaps)" :key="base_map">
+        <div class="base_map" @click="change_base_map(base_map)">
+          <div class="base_map_name">{{ base_map }}</div>
+        </div>
+      </div>
+    </div>
+
+  
+    </div>
+
+    </div>
+
+    <div class="county_analysis_container">
+       <NavbarComponent @selected_component="handle_selected_component" />
+    </div>
+
+
+
+    <!-- county analysis section  -->
+    <!-- <div class="county_analysis_selection" v-if="county_analysis">
+        <img class="close_county" src="images/close.svg" @click="close_container('county_analysis')" />
+        <CountyAnalysisComponent 
+         @counties_facilities="handle_point_data"
+         @counties_data="handle_vector_data"
+      
+        />
+      </div> -->
+
+        <!-- sub-county analysis section  -->
+    <div class="sub_county_analysis_selection" v-if="sub_county_analysis">
+        <img class="close_sub_county" src="images/close.svg" @click="close_container('sub_county_analysis')" />
+        <SubCountyAnalysisComponent 
+        @county1_filtered_data="handle_county_data" 
+         @county_filtered_data ="handle_subcounty_data" 
+         @ward_filtered_data="handle_county_data"
+         @facilities_filtered_data="handle_point_data"
+         
+         
+      />
+      </div>
+
+         <!-- Facilities section  -->
+    <div class="facilities_selection" v-if="facilities">
+        <img class="close_ward" src="images/close.svg" @click="close_container('facilities')" />
+        <FacilitiesComponent
+         />
+      </div>
+
+          <!-- Register section  -->
+    <div class="register_section" v-if="register_section" >
+        <img class="close_register" src="images/close.svg" @click="close_container('register_section')" />
+        <RegisterComponent />
+      </div>
+        
+        
+
+        <!-- Ward analysis section  -->
+    <!-- <div class="ward_analysis_selection" > -->
+        <!-- <img class="close_ward" src="images/close.svg" @click="close_container('ward_analysis')" /> -->
+        <!-- <CustomSelectComponent 
+        
+        
+        /> -->
+<!-- 
+        <AnalysisFormComponent
+            @country_vector_data="handle_vector_data"
+          
+         
+          /> -->
+      <!-- </div> -->
+
+    <!-- <div class="partners">
+       <img class="nmk" src='./assets/images/nmklogo1.svg' alt="">
+        <img class="kenya-snakes" src='./assets/images/kenyasnakebites.svg' alt="">
+         <img class="li" src='./assets/images/li.svg' alt="">
+    </div> -->
+    <div class="charts" >
+
+      <div class="pie">
+      <PieChart :height="350" :width="350" />
+    </div>
+
+     <div class="bar-chart" >
+       <BarChart :height="250" :width="350"  />
+    </div>
+
+    
+    
+
+    </div>
+     
+    
+   
+   
+    
+
+    <!-- <div style="top: 80vh; left: 70vw;" class="charts">
+      <button @click="load_charts()" style="height: 20px; width: 100px; top: 80vh; left: 70vw; background-color: green; color: white;">Chart</button>
+    </div> -->
+
+    
+     
+
+  </div>
+</template>
+
+<script>
+
+
+ 
+
+import "leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css"
+import "leaflet-ajax/dist/leaflet.ajax"
+import "leaflet-ajax/dist/leaflet.ajax.min.js"
+import { Icon } from 'leaflet';
+import BarChart from './components/BarChart'
+import PieChart from './components/PieChart'
+
+delete Icon.Default.prototype._getIconUrl;
+// Icon.options.shadowSize = [0,0];
+Icon.Default.mergeOptions({
+  iconRetinaUrl: require('../src/assets/images/bluedot.svg'),
+  iconUrl: require('../src/assets/images/bluedot.svg'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  shadowSize: [0,0]
+});
+
+
+
+ import baseLayers from "./Helpers/baseLayers";
+ import { EventBus } from "./Helpers/EventBus";
+
+// JS import
+import 'leaflet.control.opacity';
+import "leaflet-geoserver-request";
+import "leaflet.wms";
+
+
+
+import "leaflet-geoserver-request/src/L.Geoserver.js"
+ 
+
+
+
+export default {
+  name: 'MyAwesomeMap',
+  components: {
+    BarChart,
+    PieChart,
+   
+    
+    NavbarComponent: require("./components/Navbar").default,
+ 
+  
+    // CountyAnalysisComponent: require("./components/CountyAnalysis")
+      // .default,
+      SubCountyAnalysisComponent: require("./components/SubCountyAnalysis")
+      .default,
+       FacilitiesComponent: require("./components/Facilities")
+      .default,
+      RegisterComponent: require("./components/Register")
+      .default,
+   
+  },
+   data() {
+    return {
+      center: [0.02, 37.8582273], // set initial map center
+      map: null, //instance of map object,
+      handle_analysis: false,
+     
+       
+      base_map_ctrl_selections: false, //show or hide base layers
+      base_map_ctrl_cliked: false,
+      baseMaps: {}, //holds the base
+     show_rasters: true,
+      current_geojson: null, 
+      current_point: null,
+      current_raster: null,
+      legend: null,
+      // county_analysis: false,
+      sub_county_analysis: false,
+      facilities: false,
+
+      // ward_analysis: false,
+      register_section: false,
+      showChart:false,
+  
+    }
+    
+     
+  },
+      
+      mounted() {
+        this.setupLeafletMap();
+         EventBus.$on("selected_right_container_component", (selection) => {
+     this.handle_selected_component(selection);
+    });
+      },
+
+
+methods: {
+ 
+  handle_selected_component(selection) {
+      this[selection] = true;
+    
+    },      
+            
+                 close_container(container) {
+                    this[container] = false;
+                  },
+
+                   zoom_in() {
+                    this.map.setZoom(this.map.getZoom() + 1);
+                  },
+
+                  zoom_out() {
+                    this.map.setZoom(this.map.getZoom() - 1);
+                  },
+
+   
+
+    setupLeafletMap() {
+                const { osm, mapbox, mapboxSatellite} = baseLayers;
+
+                
+              
+          this.baseMaps = {
+            OpenStreetMap: osm,
+            MapBox: mapbox,
+            MapBoxSatellite: mapboxSatellite,
+          
+          };
+
+       
+                  
+              this.map = L.map("map", {
+            zoomControl: false,
+            layersControl: false,
+            center: this.center,
+            minZoom: 4.4,
+            maxZoom: 17,
+            zoom: 7,
+            layers: [mapboxSatellite],
+          }); // add the basemaps to the controls
+           
+          L.control.layers(this.baseMaps).addTo(this.map);
+            
+          
+
+                this.current_top_base_layer = "MapBoxSatellite";
+
+              ///////////////////hide layers control
+                var layerControl = document.getElementsByClassName('leaflet-control-layers');
+                layerControl[0].style.visibility = 'hidden';
+
+                //  L.control.sideBySide(this.baseMaps.OpenStreetMap, this.baseMaps.MapBox).addTo(this.map);
+                this.map.createPane('rasters');
+                this.map.getPane('rasters').style.zIndex = 1050;
+      },
+
