@@ -1,0 +1,5 @@
+{
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "i18n-ally.localesPaths": ["src/i18n"]
+}

@@ -52,16 +52,13 @@
   </q-drawer> -->
 
   <q-page>
-    <q-header bordered class="bg-white text-lime-9">
+    <q-header bordered class="bg-white text-lime-9 ">
       <q-toolbar>
 
-        <q-avatar class="q-pa-xs">
-          <img src="~/src/assets/misland.ecd2c45b.png" />
-        </q-avatar>
+        <div class="q-pa-xs">
+          <img src="~/src/assets/logoipsum-285.svg" />
+        </div>
 
-        <q-toolbar-title>MISLAND</q-toolbar-title>
-
-        <q-btn color="lime-9" label="Log in" />
       </q-toolbar>
     </q-header>
     <mappanel />

@@ -89,9 +89,9 @@ export default defineComponent({
   background: #fffffffd;
   border-radius: 10px;
   //position: absolute;
-  position: absolute;
-  top: 1%;
-  left: 1%;
+  // position: absolute;
+  // bottom: 1%;
+  // left: 1%;
   max-width: fit-content;
   z-index: 3000;
   min-width: 10vw;

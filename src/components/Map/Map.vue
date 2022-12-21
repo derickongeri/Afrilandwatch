@@ -1,18 +1,40 @@
 <template>
   <div class="row bg-white" style="height: 94vh">
-    <div class="col q-pa-sm box" :key="mapKey" style="height: 100%; border-radius: 20px">
-      <div class="row map-selection q-pb-sm q-px-none">
-        <areaSelection />
+    <div
+      class="col q-pa-sm box"
+      :key="mapKey"
+      style="height: 100%; border-radius: 20px"
+    >
+      <div class="row map-selection q-pb-sm q-px-none" style="">
+        <div
+          class="q-pt-none"
+          style="
+            position: relative;
+            width: fit-content;
+            background-color: none;
+            border-radius: 20px;
+          "
+        >
+          <areaSelection />
+        </div>
       </div>
-      <div class="row map-content" id="mapid" style="width: 100%; border-radius: 15px 15px 15px 15px">
-        <div style="
+
+      <div
+        class="row map-content"
+        id="mapid"
+        style="width: 100%; border-radius: 15px 15px 15px 15px"
+      >
+        <div
+          class="bg-white q-pa-md"
+          style="
             position: absolute;
             z-index: 3000;
-            top: 1vh;
+            bottom: 7.5vh;
             left: 1%;
             max-width: 400px;
-          ">
-
+            border-radius: 10px;
+          "
+        >
           <Maplegend
             @mouseover="map.dragging.disable()"
             @mouseout="map.dragging.enable()"
@@ -20,39 +42,469 @@
             @pointerout="map.dragging.enable()"
           />
 
+          <div class="col bg-grey-1">
+            <div>
+              <span>Layer Opacity</span>
+            </div>
+            <div class="row">
+              <q-slider
+                :min="1"
+                :max="10"
+                :step="1"
+                v-model="opacityValue"
+                color="lime-9"
+                thumb-size="12px"
+                class="row"
+                @mouseenter="handle_opacity"
+              />
+            </div>
+          </div>
         </div>
-        <div class="zoom-controls col q-gutter-xs q-py-sm" style="width: fit-content">
-          <div class="col q-gutter-sm" id="#v-step-1">
+
+        <!-- <div
+          class="bg-grey-1"
+          style="
+            position: absolute;
+            z-index: 3000;
+            bottom: 1vh;
+            right: 1%;
+            max-width: 400px;
+            border-radius: 10px;
+          "
+        >
+          <div class="map-selection q-pa-xs" style="">
+            <q-list class="row" style="min-width: 100px">
+              <q-item
+                class="col q-px-none"
+                clickable
+                v-ripple
+                @click="change_base_map('OSM')"
+              >
+                <q-item-section class="row q-px-sm">
+                  <q-avatar rounded>
+                    <img
+                      src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099828/Screenshot_from_2022-04-04_22-14-36_z8raar.png"
+                    />
+                  </q-avatar>
+                  <div class="row justify-center">Mapbox</div>
+                </q-item-section>
+              </q-item>
+              <q-item
+                class="col q-px-none"
+                clickable
+                @click="change_base_map('satellite')"
+              >
+                <q-item-section class="q-px-sm">
+                  <q-avatar rounded>
+                    <img
+                      src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099830/Screenshot_from_2022-04-04_22-14-04_tnx5m7.png"
+                    />
+                  </q-avatar>
+                  <div class="row justify-center">Satellite</div>
+                </q-item-section>
+              </q-item>
+              <q-item
+                class="col q-px-none"
+                clickable
+                @click="change_base_map('darkMap')"
+              >
+                <q-item-section class="q-px-sm">
+                  <q-avatar rounded>
+                    <img
+                      src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099827/Screenshot_from_2022-04-04_22-16-08_mu5dfk.png"
+                    />
+                  </q-avatar>
+                  <div class="row justify-center">dark</div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+        </div> -->
+
+        <div
+          class="zoom-controls q-gutter-xs q-py-sm"
+          style="width: fit-content"
+        >
+          <div class="q-pa-none q-gutter-sm">
+            <q-btn
+              size="sm"
+              flat
+              rounded
+              no-caps
+              align="between"
+              class="bg-white btn-fixed-width q-px-md"
+              color="lime-9"
+              label="Map"
+              icon="mdi-tune-vertical"
+            >
+              <q-menu
+                flat
+                auto-close
+                class="q-pa-sm menu-card"
+                :offset="[0, 0]"
+              >
+                <div class="">
+                  <div
+                    class="menu-content bg-grey-2 q-pa-sm q-ma-sm"
+                    style="border-radius: 5px"
+                  >
+                    <div class="arrow-up q-ma-xs" style="left: 10%"></div>
+                    <span
+                      class="q-mx-sm"
+                      style="font-size: 0.75em; font-color: #838c48"
+                      >Select Base Map</span
+                    >
+                    <q-separator />
+                    <div class="q-my-sm q-mx-sm" style="min-width: 150px">
+                      <div class="map-selection q-pa-xs" style="">
+                        <q-list class="row" style="min-width: 100px">
+                          <q-item
+                            class="col q-px-none"
+                            clickable
+                            v-ripple
+                            @click="change_base_map('OSM')"
+                          >
+                            <q-item-section class="row q-px-sm">
+                              <q-avatar rounded>
+                                <img
+                                  src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099828/Screenshot_from_2022-04-04_22-14-36_z8raar.png"
+                                />
+                              </q-avatar>
+                              <div
+                                class="row justify-center"
+                                style="font-size: 0.75em"
+                              >
+                                Mapbox
+                              </div>
+                            </q-item-section>
+                          </q-item>
+                          <q-item
+                            class="col q-px-none"
+                            clickable
+                            @click="change_base_map('satellite')"
+                          >
+                            <q-item-section class="q-px-sm">
+                              <q-avatar rounded>
+                                <img
+                                  src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099830/Screenshot_from_2022-04-04_22-14-04_tnx5m7.png"
+                                />
+                              </q-avatar>
+                              <div
+                                class="row justify-center"
+                                style="font-size: 0.75em"
+                              >
+                                Satellite
+                              </div>
+                            </q-item-section>
+                          </q-item>
+                          <q-item
+                            class="col q-px-none"
+                            clickable
+                            @click="change_base_map('darkMap')"
+                          >
+                            <q-item-section class="q-px-sm">
+                              <q-avatar rounded>
+                                <img
+                                  src="https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099827/Screenshot_from_2022-04-04_22-16-08_mu5dfk.png"
+                                />
+                              </q-avatar>
+                              <div
+                                class="row justify-center"
+                                style="font-size: 0.75em"
+                              >
+                                dark
+                              </div>
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </div>
+                    </div>
+                    <q-separator />
+                    <span class="text-grey-9 q-mx-sm" style="font-size: 0.75em"
+                      >Map Labels</span
+                    >
+                    <div class="q-my-sm q-mx-sm" style="min-width: 150px">
+                      <q-toggle
+                        dense
+                        size="sm"
+                        v-model="setLabels"
+                        color="lime-9"
+                        label="Show Map Labels"
+                        left-label
+                      />
+                    </div>
+                  </div>
+                </div>
+              </q-menu>
+            </q-btn>
+            <q-btn
+              size="sm"
+              flat
+              rounded
+              no-caps
+              align="between"
+              class="bg-white btn-fixed-width q-px-md"
+              color="lime-9"
+              label="Share/Print"
+              icon="mdi-share-variant"
+            >
+              <q-menu
+                flat
+                auto-close
+                class="q-pa-sm menu-card"
+                :offset="[120, 0]"
+              >
+                <div class="">
+                  <div
+                    class="menu-content bg-grey-2 q-pa-sm q-ma-sm"
+                    style="border-radius: 5px"
+                  >
+                    <div class="arrow-up q-ma-xs" style="left: 45%"></div>
+                    <span class="text-lime-9 q-mx-sm" style="font-size: 0.75em"
+                      >Copy Link</span
+                    >
+                    <q-separator />
+                    <div class="q-my-sm q-mx-sm" style="min-width: 150px">
+                      <div class="map-selection q-pa-xs" style="">
+                        <span
+                          class="row text-grey-9 q-mx-sm"
+                          style="font-size: 0.75em"
+                          >Anyone with this URL will be able to access this
+                          map.</span
+                        >
+                        <q-btn-group outlined rounded flat>
+                          <q-btn
+                            align="between"
+                            class="btn-fixed-width"
+                            no-caps
+                            outline
+                            color="lime-9"
+                            ><span>http://78.141.234.158/spa/#/</span></q-btn
+                          >
+                          <q-btn rounded color="lime-9" label="Copy" />
+                        </q-btn-group>
+                      </div>
+                    </div>
+                    <q-separator />
+                    <span class="text-lime-9 q-mx-sm" style="font-size: 0.75em"
+                      >Print Map</span
+                    >
+                    <span
+                      class="row text-grey-9 q-mx-sm"
+                      style="font-size: 0.75em"
+                      >Open a print version of this map</span
+                    >
+                    <div class="q-my-sm q-mx-sm" style="min-width: 150px">
+                      <q-btn color="lime-9" label="Print" />
+                    </div>
+                  </div>
+                </div>
+              </q-menu>
+            </q-btn>
+            <q-btn
+              size="sm"
+              flat
+              rounded
+              no-caps
+              align="between"
+              class="bg-white btn-fixed-width q-px-md"
+              color="lime-9"
+              label="Help"
+              icon="mdi-help-circle-outline"
+            >
+              <q-menu
+                flat
+                auto-close
+                class="q-pa-sm menu-card"
+                :offset="[150, 0]"
+              >
+                <div class="">
+                  <div
+                    class="menu-content bg-grey-2 q-pa-sm q-ma-sm"
+                    style="border-radius: 5px"
+                  >
+                    <div class="arrow-up q-ma-xs" style="left: 60%"></div>
+                    <span class="text-lime-9 q-mx-sm" style="font-size: 0.75em"
+                      >What would you like to do?</span
+                    >
+                    <q-separator />
+                    <div class="q-my-none q-mx-none" style="min-width: 150px">
+                      <div class="map-selection q-pa-xs" style="">
+                        <div class="q-my-sm" style="max-width: 250px">
+                          <q-btn
+                            flat
+                            align="left"
+                            color="lime-9"
+                            no-caps
+                            class="q-py-xs full-width"
+                            label="Show Welcome Message"
+                          />
+                          <q-btn
+                            flat
+                            align="left"
+                            color="lime-9"
+                            no-caps
+                            class="q-py-xs full-width"
+                            label="Visit Documentation"
+                          />
+                          <q-btn
+                            flat
+                            align="left"
+                            color="lime-9"
+                            no-caps
+                            class="q-py-xs full-width"
+                            label="Take a Tour"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </q-menu>
+            </q-btn>
+            <q-btn
+              size="sm"
+              flat
+              rounded
+              no-caps
+              align="between"
+              class="bg-white btn-fixed-width q-px-md"
+              color="lime-9"
+              label="Feedback"
+              icon="mdi-comment-quote-outline"
+            />
+          </div>
+
+          <div class="q-gutter-sm q-py-md" id="#v-step-1">
             <div class="row">
               <q-space />
-              <q-btn class="bg-white" size="sm" round flat color="lime-9" icon="add" @click="zoom_in" />
+              <div
+                class="bg-white q-pa-none q-ma-none"
+                style="border-radius: 20px"
+              >
+                <div>
+                  <q-btn
+                    class="bg-white"
+                    size="sm"
+                    round
+                    flat
+                    color="lime-9"
+                    icon="add"
+                    @click="zoom_in"
+                  />
+                </div>
+
+                <q-separator />
+                <div>
+                  <q-btn
+                    class="bg-white"
+                    size="sm"
+                    round
+                    flat
+                    color="lime-9"
+                    icon="mdi-refresh"
+                    @click="resetZoomLevel"
+                  />
+                </div>
+                <q-separator />
+
+                <div>
+                  <q-btn
+                    class="bg-white"
+                    size="sm"
+                    round
+                    flat
+                    color="lime-9"
+                    icon="remove"
+                    @click="zoom_out"
+                  />
+                </div>
+              </div>
             </div>
             <div class="row">
               <q-space />
-              <q-btn class="bg-white" size="sm" round flat color="lime-9" icon="remove" @click="zoom_out" />
+              <q-btn
+                class="bg-white"
+                size="sm"
+                round
+                flat
+                color="lime-9"
+                icon="mdi-select-drag"
+                @click="toggleDrawingTools"
+              />
+            </div>
+            <!-- <div class="row">
+              <q-space />
+              <q-btn
+                class="bg-white"
+                size="sm"
+                round
+                flat
+                color="lime-9"
+                icon="add"
+                @click="zoom_in"
+              />
             </div>
             <div class="row">
               <q-space />
-              <q-btn class="bg-white" size="sm" round flat color="lime-9" icon="layers"
-                @mouseover="showBaseMapList = true" @mouseleave="handle_base_layers">
-                <q-menu class="base-map-list" :offset="[109, -24]" v-model="showBaseMapList" @mouseover="
-                  (showBaseMapList = true), (base_map_ctrl_cliked = true)
-                " @mouseleave="
-                  (showBaseMapList = false), (base_map_ctrl_cliked = false)
-                ">
+              <q-btn
+                class="bg-white"
+                size="sm"
+                round
+                flat
+                color="lime-9"
+                icon="remove"
+                @click="zoom_out"
+              />
+            </div> -->
+            <!-- <div class="row">
+              <q-space />
+              <q-btn
+                class="bg-white"
+                size="sm"
+                round
+                flat
+                color="lime-9"
+                icon="layers"
+                @mouseover="showBaseMapList = true"
+                @mouseleave="handle_base_layers"
+              >
+                <q-menu
+                  class="base-map-list"
+                  :offset="[109, -24]"
+                  v-model="showBaseMapList"
+                  @mouseover="
+                    (showBaseMapList = true), (base_map_ctrl_cliked = true)
+                  "
+                  @mouseleave="
+                    (showBaseMapList = false), (base_map_ctrl_cliked = false)
+                  "
+                >
                   <q-list style="min-width: 100px">
-                    <q-item clickable v-close-popup v-for="basemap in Object.keys(baseMaps)" :key="basemap"
-                      @click="change_base_map(basemap)">
+                    <q-item
+                      clickable
+                      v-close-popup
+                      v-for="basemap in Object.keys(baseMaps)"
+                      :key="basemap"
+                      @click="change_base_map(basemap)"
+                    >
                       <q-item-section>{{ basemap }}</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
               </q-btn>
-            </div>
+            </div> -->
             <div class="row">
               <q-space />
-              <q-btn class="bg-white" size="sm" round flat color="lime-9" icon="mdi-chart-bar"
-                @click="openCloseStats" />
+              <q-btn
+                class="bg-white"
+                size="sm"
+                round
+                flat
+                color="lime-9"
+                icon="mdi-chart-bar"
+                @click="openCloseStats"
+              />
             </div>
           </div>
         </div>
@@ -67,26 +519,19 @@
         </div> -->
       </div>
     </div>
-    <div class="col-6 stats-panell text-grey-9" style="
-        width: 45vw;
-        height: 100%;
-      " v-if="statisticsPanel">
-      <!-- <div
-        class="q-pt-none"
-        style="
-          position: relative;
-          width: fit-content;
-          background-color: none;
-          border-radius: 20px;
-        "
+    <div
+      class="col-6 stats-panell text-grey-9"
+      style="width: 45vw; height: 100%"
+      v-if="statisticsPanel"
+    >
+      <div
+        class="q-mx-xs"
+        style="position: relative; top: 0%; width: 96%; height: 100%"
       >
-        <areaSelection />
-      </div> -->
-
-      <div class="q-mx-xs" style="position: relative; top: 0%; width: 96%; height:100%">
-
+        <!-- <div class="row map-selection q-pb-sm q-px-none">
+          <areaSelection />
+        </div> -->
         <analysisTab />
-
       </div>
     </div>
   </div>
@@ -106,7 +551,10 @@ import { useVectorStore } from "../../stores/vector_store/index.js";
 import L from "leaflet";
 // import "leaflet/dist/images/marker-icon-2x.png";
 import "./Modals/mask";
+import "./WMTS";
 import "leaflet/dist/leaflet.css";
+import "@geoman-io/leaflet-geoman-free";
+import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 //import "leaflet-draw/dist/leaflet.draw-src.css";
 
 import { Loading, QSpinnerFacebook, QSpinnerIos, QSpinnerOval } from "quasar";
@@ -125,12 +573,13 @@ export default defineComponent({
     selectionTab: require("components/Layerselections.vue").default,
     analysisTab: require("components/Analysis/analysis.vue").default,
     areaSelection: require("../Map/Modals/selectArea.vue").default,
-    Maplegend: require("./Modals/legend.vue").default
+    Maplegend: require("./Modals/legend.vue").default,
+    socials: require("components/socials/shareNetwork.vue").default,
   },
 
   setup() {
     const store = useVectorStore();
-    const { selectedVect } = setSelectedVect();
+    const { selectedVect, convertToWKT } = setSelectedVect();
 
     const leftDrawerOpen = ref(false);
     const rightDrawerOpen = ref(false);
@@ -146,8 +595,11 @@ export default defineComponent({
       opacityValue = ref(10),
       currentRasterLayer = ref(null),
       currentVectLayer = ref(null),
+      customVectLayer = ref(null),
       currentFeatureLayer = ref(null),
       subRegionBoundaries = ref(null);
+
+    let drawingTools = ref(false);
 
     let setLabels = ref(false);
     let mapLabels = ref(null);
@@ -155,6 +607,8 @@ export default defineComponent({
 
     const setLeafletMap = function () {
       const { osmTiles, darkMap, satellite } = baselayers;
+
+      console.log(osmTiles);
 
       baseMaps.value = {
         OSM: osmTiles,
@@ -231,6 +685,53 @@ export default defineComponent({
       currentVectLayer.value.bringToFront();
     };
 
+    const toggleDrawingTools = function () {
+      drawingTools.value = !drawingTools.value;
+      if (drawingTools.value) {
+        map.value.pm.addControls({
+          position: "topleft",
+          drawRectangle: false,
+          drawPolygon: true,
+          drawPolyline: false,
+          drawCircle: false,
+          drawCircleMarker: false,
+          cutPolygon: false,
+          rotateMode: false,
+          drawText: false,
+          editMode: false,
+          removalMode: true,
+          drawMarker: false,
+          oneBlock: true,
+        });
+      } else {
+        map.value.pm.removeControls();
+      }
+    };
+
+    const drawCustomPolygon = function () {
+      // let fgFun = function () {
+      //   // eslint-disable-next-line no-undef
+      //   var fg = L.featureGroup();
+      //   map2.eachLayer((layer) => {
+      //     // eslint-disable-next-line no-undef
+      //     if (layer instanceof L.Path || layer instanceof L.Marker) {
+      //       fg.addLayer(layer);
+      //     }
+      //   });
+      //   return fg.toGeoJSON();
+      // };
+      //new button
+      //  map.value.pm.Toolbar.copyDrawControl('Line', {
+      //       name: 'SoonToBeArrow',
+      //       block: 'draw',
+      //       title: 'Display text on hover button',
+      //       actions: [
+      //           // uses the default 'cancel' action
+      //           'cancel',
+      //       ],
+      //   });
+    };
+
     const setCurrentVector = async function () {
       try {
         Loading.show({
@@ -246,7 +747,7 @@ export default defineComponent({
         let vectLayer = await selectedVect(); //await axios.get(wfsURL);
 
         currentVectLayer.value = L.mask(vectLayer, {
-          fillOpacity: 0.7,
+          fillOpacity: 0,
           fillColor: "#424242",
           color: "#484c4d",
         });
@@ -286,21 +787,21 @@ export default defineComponent({
             feature = layer
               .bindPopup(
                 "<br><strong>" +
-                (store.getselectedCountry
-                  ? feature.properties.NAME_1
-                  : feature.properties.CountryNam) +
-                ",</strong><br> region <strong>" +
-                (store.getselectedCountry
-                  ? feature.properties.ENGTYPE_1
-                  : feature.properties.RegionName) +
-                "</strong><br><br> <button id='pop-up-selector' class='pop-up-btn'>Analyze</button>"
+                  (store.getselectedCountry
+                    ? feature.properties.NAME_1
+                    : feature.properties.CountryNam) +
+                  ",</strong><br> region <strong>" +
+                  (store.getselectedCountry
+                    ? feature.properties.ENGTYPE_1
+                    : feature.properties.RegionName) +
+                  "</strong><br><br> <button id='pop-up-selector' class='pop-up-btn'>Analyze</button>"
               )
               .on("popupopen", function () {
                 store.slectedCountry
                   ? (selectedPopupFeature.value =
-                    feature.feature.properties.NAME_1)
+                      feature.feature.properties.NAME_1)
                   : (selectedPopupFeature.value =
-                    feature.feature.properties.CountryNam);
+                      feature.feature.properties.CountryNam);
 
                 map.value._popup._closeButton.addEventListener(
                   "click",
@@ -313,8 +814,9 @@ export default defineComponent({
         });
 
         currentFeatureLayer.value.addTo(map.value);
+
         map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
-          paddingBottomRight: [550, 0],
+          paddingBottomRight: [650, 0],
           setZoom: 2,
         });
 
@@ -325,7 +827,24 @@ export default defineComponent({
       }
     };
 
-    const setRasterLayer = function () {
+    const resetZoomLevel = function () {
+      map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
+        paddingBottomRight: [600, 0],
+        setZoom: 2,
+      });
+    };
+
+    const handle_opacity = function () {
+      if (currentRasterLayer.value)
+        currentRasterLayer.value.options.opacity = opacityValue.value / 10;
+      if (currentRasterLayer.value)
+        map.value.removeLayer(currentRasterLayer.value);
+      currentRasterLayer.value.addTo(map.value); //add layer to map
+      currentRasterLayer.value.bringToFront();
+      currentVectLayer.value.bringToFront();
+    };
+
+    const setRasterLayer = async function () {
       try {
         Loading.show({
           spinner: QSpinnerOval,
@@ -343,7 +862,9 @@ export default defineComponent({
             format: "image/png",
             transparent: "true",
             opacity: 1,
-            // crs:L.CRS.EPSG4326,
+            tilematrixSet: "EPSG:4326",
+            styles: 'Mislanddata:testStyle6',
+            crs:L.CRS.EPSG4326,
             // env: 'cropShape:POLYGON((36.60924206010921 0.5323032302736124, 36.60924206010921 -1.7062098171759033, 38.54372792153049 -1.7062098171759033, 38.54372792153049 0.5323032302736124, 36.60924206010921 0.5323032302736124))'
           })
           .addTo(map.value);
@@ -354,6 +875,30 @@ export default defineComponent({
         Loading.hide();
       }
     };
+
+    const addLabels = function (val) {
+      if (val) {
+        mapLabels.value = L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+          {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: "abcd",
+            //maxZoom: 20,
+          }
+        );
+        mapLabels.value.addTo(map.value).bringToFront();
+        //console.log("layer added");
+      } else {
+        map.value.removeLayer(mapLabels.value);
+        //console.log("layer removed");
+      }
+    };
+
+    watch(setLabels, () => {
+      //console.log(setLabels.value);
+      addLabels(setLabels.value);
+    });
 
     const setPopuFeature = computed(() => {
       return selectedPopupFeature.value;
@@ -414,6 +959,12 @@ export default defineComponent({
       opacityValue,
       baseMaps,
       mapKey,
+      drawCustomPolygon,
+      toggleDrawingTools,
+      value: ref(true),
+      resetZoomLevel,
+      handle_opacity,
+      setLabels,
     };
   },
 });
@@ -509,5 +1060,17 @@ export default defineComponent({
 
 .box .row.map-content {
   flex: 1 1 auto;
+}
+
+.leaflet-right .leaflet-control {
+  float: right;
+}
+
+.leaflet-control {
+  position: relative;
+  bottom: 50%;
+  z-index: 800;
+  pointer-events: visiblePainted;
+  pointer-events: auto;
 }
 </style>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE ServiceExceptionReport SYSTEM "http://78.141.234.158/geoserver/schemas/wms/1.1.1/WMS_exception_1_1_1.dtd"> <ServiceExceptionReport version="1.1.1" >   <ServiceException>
+      Error rendering coverage on the fast path
+java.lang.RuntimeException: Failed to evaluate the process function, error is: org.geotools.coverage.processing.EmptyIntersectionException: Crop envelope does not intersect in model space
+Failed to evaluate the process function, error is: org.geotools.coverage.processing.EmptyIntersectionException: Crop envelope does not intersect in model space
+org.geotools.coverage.processing.EmptyIntersectionException: Crop envelope does not intersect in model space
+Crop envelope does not intersect in model space
+</ServiceException></ServiceExceptionReport>

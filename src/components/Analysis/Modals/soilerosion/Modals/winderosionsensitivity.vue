@@ -7,34 +7,21 @@
         </div>
         <q-space />
         <div class="q-py-sm">
-          <q-btn
-            unelevated
-            rounded
-            color="grey-9"
-            size="sm"
-            label="Remove Layer"
-          />
+          <q-btn unelevated rounded color="grey-9" size="sm" label="Remove Layer" />
         </div>
       </div>
       <div class="row">
         <div class="q-gutter-sm" style="min-width: 150px">
-          <q-select
-            rounded
-            outlined
-            dense
-            :options="options"
-            label="Reporting Year"
-            stack-label
-          />
+          <q-select rounded outlined dense :options="options" label="Reporting Year" stack-label />
         </div>
         <q-space />
         <div class="q-gutter-sm">
-          <q-btn round dense size="sm" color="grey-9" icon="map"
-            ><q-tooltip class="bg-grey-9">add layer to map</q-tooltip></q-btn
-          >
-          <q-btn round dense size="sm" color="grey-9" icon="mdi-compare"
-            ><q-tooltip class="bg-grey-9">Compare</q-tooltip></q-btn
-          >
+          <q-btn round dense size="sm" color="grey-9" icon="map">
+            <q-tooltip class="bg-grey-9">add layer to map</q-tooltip>
+          </q-btn>
+          <q-btn round dense size="sm" color="grey-9" icon="mdi-compare">
+            <q-tooltip class="bg-grey-9">Compare</q-tooltip>
+          </q-btn>
         </div>
       </div>
     </q-card-section>
@@ -47,65 +34,29 @@
             </div>
             <q-space />
             <div class="row chart-btns q-gutter-sm q-ma-none">
-              <q-btn
-                round
-                dense
-                outline
-                size="9px"
-                color="grey-9"
-                icon="swap_horiz"
-                @click="switchChart()"
-              />
-              <q-btn
-                round
-                dense
-                outline
-                type="submit"
-                size="9px"
-                color="grey-9"
-                icon="file_download"
-                @click="exportChart"
-              />
-              <q-btn
-                round
-                dense
-                outline
-                size="9px"
-                color="grey-9"
-                icon="share"
-              />
+              <q-btn round dense outline size="9px" color="grey-9" icon="swap_horiz" @click="switchChart()" />
+              <q-btn round dense outline type="submit" size="9px" color="grey-9" icon="file_download"
+                @click="exportChart" />
+              <q-btn round dense outline size="9px" color="grey-9" icon="share" />
             </div>
           </div>
         </q-card-section>
-        <q-card-section
-          ><div class="q-py-md">
-            <pieChart :chartData="piechartData"></pieChart></div
-        ></q-card-section>
+        <q-card-section>
+          <div class="q-py-md">
+            <pieChart :chartData="piechartData"></pieChart>
+          </div>
+        </q-card-section>
       </q-card>
     </q-card-section>
     <q-card-section>
       <q-card flat bordered class="chart-card">
         <div class="row q-pa-md">
           <div class="q-gutter-sm" style="min-width: 50%">
-            <q-select
-              rounded
-              outlined
-              dense
-              :options="options"
-              label="Start Year"
-              stack-label
-            />
+            <q-select rounded outlined dense :options="options" label="Start Year" stack-label />
           </div>
           <q-space />
           <div class="q-gutter-sm" style="min-width: 50%">
-            <q-select
-              rounded
-              outlined
-              dense
-              :options="options"
-              label="End Year"
-              stack-label
-            />
+            <q-select rounded outlined dense :options="options" label="End Year" stack-label />
           </div>
         </div>
         <div class="row q-pa-md q-gutter-sm">
@@ -114,25 +65,9 @@
           </div>
           <q-space />
           <div class="row chart-btns q-gutter-sm q-ma-none">
-            <q-btn
-              round
-              dense
-              outline
-              size="9px"
-              color="grey-9"
-              icon="swap_horiz"
-              @click="switchChart()"
-            />
-            <q-btn
-              round
-              dense
-              outline
-              type="submit"
-              size="9px"
-              color="grey-9"
-              icon="file_download"
-              @click="exportChart"
-            />
+            <q-btn round dense outline size="9px" color="grey-9" icon="swap_horiz" @click="switchChart()" />
+            <q-btn round dense outline type="submit" size="9px" color="grey-9" icon="file_download"
+              @click="exportChart" />
             <q-btn round dense outline size="9px" color="grey-9" icon="share" />
           </div>
         </div>
@@ -182,18 +117,26 @@ export default {
         {
           backgroundColor: [
             "#267300",
-            "#a8a800",
-            "#55ff00",
-            "#ffebaf",
-            "#ff7f7f",
+            "#808080",
+            //"#55ff0000",
+            // "#ffebaf",
+            // "#ff7f7f",
           ],
-          borderColor: "rgba(0, 0, 0, 0)",
-          borderRadius: 10,
+          borderColor: [],
+          borderRadius: {
+            outerEnd: [0, 20],
+            outerStart: [20, 0],
+            innerStart: [20, 0],
+            innerEnd: [0, 20]
+          },
+          borderAlign: 'center',
           borderWidth: 0,
           spacing: 0,
-          cutout: "50",
-          radius: "100%",
-          data: [20, 30, 10, 20, 30],
+          cutout: "98",
+          rotation: 180,
+          circumference: 290,
+          radius: "75%",
+          data: [75, 30,],
         },
       ],
     };

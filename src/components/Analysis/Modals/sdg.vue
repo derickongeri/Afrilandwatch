@@ -80,6 +80,10 @@
         <q-tab-panel name="Land Productivity" class="q-pa-none">
           <landProductivity />
         </q-tab-panel>
+
+        <q-tab-panel name="Land Cover" class="q-pa-none">
+          <landCover />
+        </q-tab-panel>
       </q-tab-panels>
     </div>
   </div>
@@ -104,10 +108,11 @@ export default {
     sdgindicator: require("../Modals/sdg/sdg.vue").default,
     landProductivity: require("../Modals/sdg/Productivity/productivity.vue")
       .default,
+    landCover: require("../Modals/sdg/Landcover.vue").default,
   },
 
   setup() {
-    const tab = ref("sdg");
+    const tab = ref("Land Cover");
     const productivityTab = ref("Land Productivity");
 
     const setProductivityTab = function () {

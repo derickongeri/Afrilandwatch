@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE ServiceExceptionReport SYSTEM "http://78.141.234.158/geoserver/schemas/wms/1.1.1/WMS_exception_1_1_1.dtd"> <ServiceExceptionReport version="1.1.1" >   <ServiceException>
+      Error rendering coverage on the fast path
+java.lang.RuntimeException: Failed to evaluate the process function, error is: javax.media.jai.util.ImagingException: All factories fail for the operation &quot;VectorBinarize&quot;
+Failed to evaluate the process function, error is: javax.media.jai.util.ImagingException: All factories fail for the operation &quot;VectorBinarize&quot;
+javax.media.jai.util.ImagingException: All factories fail for the operation &quot;VectorBinarize&quot;
+All factories fail for the operation &quot;VectorBinarize&quot;The specified dimensional parameter is non-positive.
+</ServiceException></ServiceExceptionReport>
