@@ -528,9 +528,6 @@
         class="q-mx-xs"
         style="position: relative; top: 0%; width: 96%; height: 100%"
       >
-        <!-- <div class="row map-selection q-pb-sm q-px-none">
-          <areaSelection />
-        </div> -->
         <analysisTab />
       </div>
     </div>

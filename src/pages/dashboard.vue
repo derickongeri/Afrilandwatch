@@ -61,7 +61,23 @@
 
       </q-toolbar>
     </q-header>
-    <mappanel />
+
+      <mappanel />
+
+
+    <!-- <div
+      class="col-6 stats-panell text-grey-9"
+      style="width: 45vw; height: 100%"
+      v-if="statisticsPanel"
+    >
+      <div
+        class="q-mx-xs"
+        style="position: relative; top: 0%; width: 96%; height: 100%"
+      >
+        <analysisTab />
+      </div>
+    </div> -->
+
   </q-page>
 </template>
 
@@ -71,6 +87,7 @@ export default {
   name: "my-tour",
   components: {
     mappanel: require("components/Map/Map.vue").default,
+    analysisTab: require("components/Analysis/analysis.vue").default,
   },
   setup() {
     return {
