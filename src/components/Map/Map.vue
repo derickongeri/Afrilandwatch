@@ -1,5 +1,5 @@
 <template>
-  <div class="row bg-white" style="height: 94vh">
+  <!-- <div class="row bg-white" style="height: 94vh"> -->
     <div
       class="col q-pa-sm box"
       :key="mapKey"
@@ -433,67 +433,6 @@
                 @click="toggleDrawingTools"
               />
             </div>
-            <!-- <div class="row">
-              <q-space />
-              <q-btn
-                class="bg-white"
-                size="sm"
-                round
-                flat
-                color="lime-9"
-                icon="add"
-                @click="zoom_in"
-              />
-            </div>
-            <div class="row">
-              <q-space />
-              <q-btn
-                class="bg-white"
-                size="sm"
-                round
-                flat
-                color="lime-9"
-                icon="remove"
-                @click="zoom_out"
-              />
-            </div> -->
-            <!-- <div class="row">
-              <q-space />
-              <q-btn
-                class="bg-white"
-                size="sm"
-                round
-                flat
-                color="lime-9"
-                icon="layers"
-                @mouseover="showBaseMapList = true"
-                @mouseleave="handle_base_layers"
-              >
-                <q-menu
-                  class="base-map-list"
-                  :offset="[109, -24]"
-                  v-model="showBaseMapList"
-                  @mouseover="
-                    (showBaseMapList = true), (base_map_ctrl_cliked = true)
-                  "
-                  @mouseleave="
-                    (showBaseMapList = false), (base_map_ctrl_cliked = false)
-                  "
-                >
-                  <q-list style="min-width: 100px">
-                    <q-item
-                      clickable
-                      v-close-popup
-                      v-for="basemap in Object.keys(baseMaps)"
-                      :key="basemap"
-                      @click="change_base_map(basemap)"
-                    >
-                      <q-item-section>{{ basemap }}</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-btn>
-            </div> -->
             <div class="row">
               <q-space />
               <q-btn
@@ -519,7 +458,7 @@
         </div> -->
       </div>
     </div>
-    <div
+    <!-- <div
       class="col-6 stats-panell text-grey-9"
       style="width: 45vw; height: 100%"
       v-if="statisticsPanel"
@@ -530,8 +469,8 @@
       >
         <analysisTab />
       </div>
-    </div>
-  </div>
+    </div> -->
+  <!-- </div> -->
 </template>
 
 <script>
