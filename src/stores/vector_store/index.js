@@ -11,12 +11,14 @@ export const useVectorStore = defineStore({
     selectedRegion: "Sourth Africa",
     slectedCountry: "",
     selectedSubregion: "",
+    selectedYear: 2010
   }),
   getters: {
     getRegionNames: (state) => state.regionNames,
     getselectedRegion: (state) => state.selectedRegion,
     getselectedCountry: (state) => state.slectedCountry,
     getselectedSubRegion: (state) => state.selectedSubregion,
+    getYearSelected: (state) => state.selectedYear
   },
   actions: {
     async fetchRegionNames() {
@@ -52,5 +54,9 @@ export const useVectorStore = defineStore({
     setSubRegionSelected(val) {
       this.selectedSubregion = val;
     },
+    setSelectedYear(val) {
+      this.selectedYear = val
+      console.log(this.selectedYear)
+    }
   },
 });

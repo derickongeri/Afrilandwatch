@@ -57,7 +57,7 @@ export default {
             backgroundColor: ["#b71c1c", "#2e7d32", "#fff9b4"],
             data: [20, 30, 60],
             barPercentage: 0.5,
-            categoryPercentage: 0.75,
+            categoryPercentage: 0.5,
           },
         ],
       },

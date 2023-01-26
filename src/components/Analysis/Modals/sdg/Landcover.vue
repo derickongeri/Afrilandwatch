@@ -9,11 +9,12 @@
               <q-select
                 style="max-width: 75%"
                 color="lime-9"
-                v-model="model"
+                v-model="selectedYear"
                 rounded
                 outlined
                 dense
                 :options="options"
+                @update:model-value="getSelectedYear"
                 label="Reporting Year"
                 stack-label
               />
@@ -72,6 +73,7 @@
                           dense
                           options-dense
                           :options="options"
+                          @update:model-value="getSelectedYear"
                         />
                       </div>
                     </div>
@@ -113,7 +115,9 @@
       </q-card-section>
       <q-card-section class="q-pt-xs">
         <div class="q-px-md q-mt-none text-justify">
-          Explore interactive charts and maps that summarize the yearly Landcover. Landcover Data is obtained from Esa CCI Landcover and reclassified into 6 IPCC classes and Includes Water.
+          Explore interactive charts and maps that summarize the yearly
+          Landcover. Landcover Data is obtained from Esa CCI Landcover and
+          reclassified into 6 IPCC classes and Includes Water.
         </div>
       </q-card-section>
       <q-card-section>
@@ -219,18 +223,17 @@
             id="chart-canvas"
             ref="chartRef"
             v-if="chartType === 'bar'"
-            :chartData = "barchartData"
+            :chartData="barchartData"
           />
           <pieChart
             id="chart-canvas"
             ref="chartRef"
             v-if="chartType === 'pie'"
-            :chartData = "piechartData"
+            :chartData="piechartData"
           />
         </div>
       </q-card-section>
     </q-card>
-
   </div>
 </template>
 
@@ -246,6 +249,8 @@ import {
   watch,
 } from "vue";
 
+import { useVectorStore } from "../../../../stores/vector_store/index.js";
+
 import { Loading, QSpinnerFacebook, QSpinnerIos, QSpinnerOval } from "quasar";
 import setChartMethods from "../../../../composables/chartMethods.js";
 
@@ -259,6 +264,7 @@ export default {
   },
 
   setup() {
+    const store = useVectorStore();
     const { stackBarChart } = setChartMethods();
 
     const chartType = ref("bar");
@@ -273,34 +279,67 @@ export default {
     const timeSeriesData = ref(null);
     const lineData = ref(null);
     const barchartData = ref(null);
+    const selectedYear = ref(2010);
 
     piechartData.value = {
-      labels: ["Water", "Bare land", "Artificial areas", "Wetland","Cropland","Grassland", "Forest"],
+      labels: [
+        "Water",
+        "Bare land",
+        "Artificial areas",
+        "Wetland",
+        "Cropland",
+        "Grassland",
+        "Forest",
+      ],
       datasets: [
         {
-          backgroundColor: ["#0046c8", "#fff5d7", "#d7191c","#33e9f6","#f2fc83","#f7ba02","#007300"],
+          backgroundColor: [
+            "#0046c8",
+            "#fff5d7",
+            "#d7191c",
+            "#33e9f6",
+            "#f2fc83",
+            "#f7ba02",
+            "#007300",
+          ],
           borderColor: "rgba(0, 0, 0, 0)",
           borderRadius: 10,
           borderWidth: 0,
           spacing: 0,
           cutout: "75",
           radius: "80%",
-          data: [10, 30, 3,7, 30, 60,40],
+          data: [10, 30, 3, 7, 30, 60, 40],
         },
       ],
     };
 
     barchartData.value = {
-        labels: ["Water", "Bare land", "Artificial areas", "Wetland","Cropland","Grassland", "Forest"],
-        datasets: [
-          {
-            backgroundColor: ["#0046c8", "#fff5d7", "#d7191c","#33e9f6","#f2fc83","#f7ba02","#007300"],
-            data: [10, 15, 3,7, 30, 60,40],
-            barPercentage: 0.5,
-            categoryPercentage: 0.75,
-          },
-        ],
-      }
+      labels: [
+        "Water",
+        "Bare land",
+        "Artificial areas",
+        "Wetland",
+        "Cropland",
+        "Grassland",
+        "Forest",
+      ],
+      datasets: [
+        {
+          backgroundColor: [
+            "#0046c8",
+            "#fff5d7",
+            "#d7191c",
+            "#33e9f6",
+            "#f2fc83",
+            "#f7ba02",
+            "#007300",
+          ],
+          data: [10, 15, 3, 7, 30, 60, 40],
+          barPercentage: 0.5,
+          categoryPercentage: 0.75,
+        },
+      ],
+    };
 
     const stackChart = function () {
       stackedOption.value = !stackedOption.value;
@@ -354,6 +393,12 @@ export default {
       a = null;
     };
 
+    const getSelectedYear = function (val) {
+      val = selectedYear.value;
+      console.log(selectedYear.value);
+      store.setSelectedYear(val);
+    };
+
     return {
       value: ref(true),
       icon: ref(false),
@@ -362,7 +407,7 @@ export default {
       chartType,
       tsChartType,
       model: ref("2015"),
-      options: ["2015", "2016", "2017", "2018", "2019"],
+      options: ["2000","2015", "2016", "2017", "2018", "2019", "203"],
       changeCharttype,
       switchTimeSieriesCharttype,
       chartRef,
@@ -372,6 +417,8 @@ export default {
       stackChart,
       barchartData,
       piechartData,
+      getSelectedYear,
+      selectedYear,
     };
   },
 };
