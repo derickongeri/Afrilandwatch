@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="col q-pa-sm box"
-    :key="mapKey"
-    style="height: 100%; border-radius: 20px"
-  >
+  <div class="col q-pa-sm box" style="height: 100%; border-radius: 20px">
     <div class="row map-selection q-pb-sm q-px-none" style="">
       <div
         class="q-pt-none"
@@ -403,21 +399,14 @@ import {
 } from "vue";
 import { useVectorStore } from "../../stores/vector_store/index.js";
 import L from "leaflet";
-// import "leaflet/dist/images/marker-icon-2x.png";
 import "./Modals/mask";
+import "./Modals/smoothWheelZoom";
 import "./WMTS";
 import "leaflet/dist/leaflet.css";
 import "@geoman-io/leaflet-geoman-free";
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
-//import "leaflet-draw/dist/leaflet.draw-src.css";
-
-import { Loading, QSpinnerFacebook, QSpinnerIos, QSpinnerOval } from "quasar";
-// import { axios } from "src/boot/axios";
-//import "leaflet-draw";
-//import "leaflet-side-by-side";
-
+import { Loading, QSpinnerOval, QSpinnerFacebook } from "quasar";
 import baselayers from "./Modals/baselayers";
-//import { labeledStatement } from "@babel/types";
 
 import setSelectedVect from "./Modals/fetchVectors";
 import Legend from "./Modals/legend.vue";
@@ -436,11 +425,8 @@ export default defineComponent({
     const store = useVectorStore();
     const { selectedVect, convertToWKT } = setSelectedVect();
 
-    const leftDrawerOpen = ref(false);
     const rightDrawerOpen = ref(false);
     const map = ref(null),
-      mapKey = ref(0),
-      map2 = ref(null),
       statisticsPanel = ref(false),
       center = ref([1, 10]), // set initial map center
       baseMaps = ref([]),
@@ -450,9 +436,7 @@ export default defineComponent({
       opacityValue = ref(10),
       currentRasterLayer = ref(null),
       currentVectLayer = ref(null),
-      customVectLayer = ref(null),
       currentFeatureLayer = ref(null),
-      subRegionBoundaries = ref(null),
       rasterYear = ref(null);
 
     let drawingTools = ref(false);
@@ -462,7 +446,7 @@ export default defineComponent({
     let selectedPopupFeature = ref(null);
 
     const setLeafletMap = function () {
-      const { osmTiles, darkMap, satellite } = baselayers;
+      const { osmTiles, darkMap, satellite, USGS_Imagery } = baselayers;
 
       console.log(osmTiles);
 
@@ -470,45 +454,43 @@ export default defineComponent({
         OSM: osmTiles,
         satellite: satellite,
         darkMap: darkMap,
+        imagery: USGS_Imagery,
       };
 
       map.value = L.map("mapid", {
         zoomControl: false,
-        layersControl: false,
-        attributionControl: false,
+        layersControl: true,
+        center: center.value,
+        zoom: 3.5,
+        zoomAnimation: true,
+        fadeAnimation: true,
+        scrollWheelZoom: false,
+        smoothWheelZoom: true,
+        smoothSenesitivity: 0.5,
         //maxBounds: bounds,
         minZoom: 3,
         maxZoom: 17,
-      }).setView(center.value, 3);
+        layers: [USGS_Imagery],
+      });
 
-      L.tileLayer(
-        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}{r}?access_token={accessToken}",
-        {
-          attribution:
-            'Map data (c) <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
-
-          id: "mapbox/satellite-v9",
-          accessToken:
-            "pk.eyJ1IjoiY2hyaXNiYXJ0IiwiYSI6ImNrZTFtb3Z2bDAweTMyem1zcmthMGY0ejQifQ.3PzoCgSiG-1-sV1qJvO9Og",
-        }
-      ).addTo(map.value);
+      map.value.scrollWheelZoom = true;
 
       L.control.layers(baseMaps.value).addTo(map.value);
 
       current_top_base_layer.value = "satellite";
 
-      L.control
-        .attribution({
-          position: "bottomleft",
-        })
-        .addTo(map.value);
-      L.control.scale({ position: "bottomleft" }).addTo(map.value);
-      ///////////////////hide layers control
+      // L.control
+      //   .attribution({
+      //     position: "bottomleft",
+      //   })
+      //   .addTo(map.value);
+      // L.control.scale({ position: "bottomleft" }).addTo(map.value);
+      // ///////////////////hide layers control
       let layerControl = document.getElementsByClassName(
         "leaflet-control-layers"
       );
       layerControl[0].style.visibility = "hidden";
-      statisticsPanel.value = true;
+      // statisticsPanel.value = true;
     };
 
     const zoom_in = function () {
@@ -531,12 +513,15 @@ export default defineComponent({
 
     //get the base map object of leaflet according to the selection clicked
     const change_base_map = function (basemap) {
-      const index = Object.keys(baseMaps.value).indexOf(basemap);
+      const selected_base_map = baseMaps.value[basemap];
+      map.value.addLayer(selected_base_map);
+      selected_base_map.bringToFront();
+      // const index = Object.keys(baseMaps.value).indexOf(basemap);
 
-      let layerControlElement = document.getElementsByClassName(
-        "leaflet-control-layers"
-      )[0];
-      layerControlElement.getElementsByTagName("input")[index].click();
+      // let layerControlElement = document.getElementsByClassName(
+      //   "leaflet-control-layers"
+      // )[0];
+      // layerControlElement.getElementsByTagName("input")[index].click();
       currentRasterLayer.value.bringToFront();
       currentVectLayer.value.bringToFront();
     };
@@ -590,43 +575,27 @@ export default defineComponent({
 
     const setCurrentVector = async function () {
       try {
-        Loading.show({
-          spinner: QSpinnerOval,
-          spinnerSize: "xl",
-          message: "Loading...",
-        });
-
         if (currentVectLayer.value) {
           map.value.removeLayer(currentVectLayer.value);
         }
 
         let vectLayer = await selectedVect(); //await axios.get(wfsURL);
 
-        let wktLayer = convertToWKT();
-
-        currentVectLayer.value = L.mask(vectLayer, {
+        currentVectLayer.value = L.geoJSON(vectLayer, {
           fillOpacity: 0,
           fillColor: "#424242",
+          weight: 1.5,
           color: "#484c4d",
         });
 
         currentVectLayer.value.addTo(map.value);
-
-        Loading.hide();
       } catch (error) {
         console.log(error);
-        Loading.hide();
       }
     };
 
     const setRegionsWithin = async function () {
       try {
-        Loading.show({
-          spinner: QSpinnerOval,
-          spinnerSize: "xl",
-          message: "Loading...",
-        });
-
         let vectLayer = await selectedVect();
 
         if (currentFeatureLayer.value) {
@@ -674,20 +643,17 @@ export default defineComponent({
         currentFeatureLayer.value.addTo(map.value);
 
         map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
-          paddingBottomRight: [0, 0],
+          // paddingBottomRight: [0, 0],
           setZoom: 2,
         });
-
-        Loading.hide();
       } catch (error) {
         console.log(error);
-        Loading.hide();
       }
     };
 
     const resetZoomLevel = function () {
       map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
-        paddingBottomRight: [600, 0],
+        // paddingBottomRight: [600, 0],
         setZoom: 2,
       });
     };
@@ -705,7 +671,7 @@ export default defineComponent({
     const setRasterLayer = async function () {
       try {
         Loading.show({
-          spinner: QSpinnerOval,
+          spinner: QSpinnerFacebook,
           spinnerSize: "xl",
           message: "Loading...",
         });
@@ -721,43 +687,46 @@ export default defineComponent({
         if (store.getselectedSubRegion) {
           vectName = store.getselectedSubRegion;
           adminLevel = 1;
-          countryName = store.getselectedCountry
+          countryName = store.getselectedCountry;
         } else if (store.getselectedCountry) {
           vectName = store.getselectedCountry;
           adminLevel = 0;
-          countryName = countryName
+          countryName = countryName;
         } else {
           vectName = store.getselectedRegion;
           adminLevel = null;
         }
 
-        const sldRequest = await axios.get(`http://127.0.0.1:5000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`)
+        const sldRequest = await axios.get(
+          `http://127.0.0.1:5000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`
+        );
 
-        console.log(sldRequest.data[0].sldName)
+        // console.log(sldRequest.data[0].sldName);
 
         const wmsURL = "http://78.141.234.158/geoserver/Mislanddata/wms";
 
         rasterYear.value = store.getYearSelected;
 
-        currentRasterLayer.value = L.tileLayer
-          .wms(wmsURL, {
-            layers: `Mislanddata:Landcover${rasterYear.value}`,
-            "layer-type": "overlay",
-            // CQL_FILTER: "layer = " + "'" + region + "'",
-            format: "image/png",
-            transparent: "true",
-            opacity: 1,
-            tilematrixSet: "EPSG:4326",
-            styles: `Mislanddata:${sldRequest.data[0].sldName}`,
-            crs: L.CRS.EPSG4326,
-            // env: 'cropShape:POLYGON((36.60924206010921 0.5323032302736124, 36.60924206010921 -1.7062098171759033, 38.54372792153049 -1.7062098171759033, 38.54372792153049 0.5323032302736124, 36.60924206010921 0.5323032302736124))'
-          })
-          .addTo(map.value);
+        currentRasterLayer.value = L.tileLayer.wms(wmsURL, {
+          layers: `Mislanddata:Landcover${rasterYear.value}`,
+          "layer-type": "overlay",
+          // CQL_FILTER: "layer = " + "'" + region + "'",
+          format: "image/png",
+          transparent: "true",
+          opacity: 1,
+          tilematrixSet: "EPSG:4326",
+          styles: `Mislanddata:${sldRequest.data[0].sldName}`,
+          crs: L.CRS.EPSG4326,
+          // env: 'cropShape:POLYGON((36.60924206010921 0.5323032302736124, 36.60924206010921 -1.7062098171759033, 38.54372792153049 -1.7062098171759033, 38.54372792153049 0.5323032302736124, 36.60924206010921 0.5323032302736124))'
+        });
 
-        Loading.hide();
+        currentRasterLayer.value.addTo(map.value).bringToFront();
+
+        currentRasterLayer.value.on("load", () => {
+          Loading.hide();
+        });
       } catch (error) {
         console.log(error);
-        Loading.hide();
       }
     };
 
@@ -811,15 +780,14 @@ export default defineComponent({
     });
 
     watch(selecteVector, () => {
-      Loading.show({
-          spinner: QSpinnerOval,
-          spinnerSize: "xl",
-          message: "Loading...",
-        });
+      // Loading.show({
+      //   spinner: QSpinnerOval,
+      //   spinnerSize: "xl",
+      //   message: "Loading...",
+      // });
       setCurrentVector();
       setRegionsWithin();
       setRasterLayer();
-      Loading.hide()
     });
 
     const setRasterYear = computed(() => {
@@ -832,14 +800,16 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      //leafletRouting();
+      Loading.show({
+        spinner: QSpinnerOval,
+        spinnerSize: "xl",
+        message: "Loading...",
+      });
       setLeafletMap();
-      // setSubRegions();
-      // setCurrentRaster();
       setCurrentVector();
       setRegionsWithin();
       setRasterLayer();
-      //addLabels();
+      Loading.hide();
     });
 
     const openCloseStats = function () {
@@ -859,7 +829,6 @@ export default defineComponent({
       change_base_map,
       opacityValue,
       baseMaps,
-      mapKey,
       drawCustomPolygon,
       toggleDrawingTools,
       value: ref(true),

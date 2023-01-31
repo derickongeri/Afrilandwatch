@@ -11,7 +11,6 @@
     <div class="row bg-white" style="height: 94vh">
       <div
         class="col q-pa-sm box"
-        :key="mapKey"
         style="height: 100%; border-radius: 20px"
       >
         <mappanel />

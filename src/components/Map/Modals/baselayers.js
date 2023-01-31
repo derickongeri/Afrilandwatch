@@ -37,4 +37,16 @@ export default {
         "https://res.cloudinary.com/dv3id0zrx/image/upload/v1649099828/Screenshot_from_2022-04-04_22-14-36_z8raar.png",
     }
   ),
+
+  USGS_Imagery: L.tileLayer(
+    "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}{r}?access_token={accessToken}",
+    {
+      attribution:
+        'Map data (c) <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 20,
+      id: "mapbox/satellite-v9",
+      accessToken:
+        "pk.eyJ1IjoidGVsZW9wcyIsImEiOiJja3ExejlpeXEwanBmMnZxcmE0NmkwNnkyIn0.cYjjcrjUulIBjlU4o8EbJg"
+    }
+  )
 };

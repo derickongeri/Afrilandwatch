@@ -1,7 +1,6 @@
 import { useVectorStore } from "../../../stores/vector_store/index.js";
 import { axios } from "src/boot/axios";
-import { parseFromWK, convertToWK } from 'wkt-parser-helper';
-import { Formatter } from 'fracturedjsonjs';
+
 
 export default function setSelectedVect() {
   const store = useVectorStore();
@@ -49,19 +48,8 @@ export default function setSelectedVect() {
       return vectLayer;
   };
 
-  const convertToWKT = async function () {
-    let vectLayer = await selectedVect();
-    const parsed = JSON.parse(JSON.stringify(vectLayer))
-    const wkt = convertToWK(parsed)
-
-    // console.log(wkt)
-
-    return wkt
-  }
-
   return {
-    selectedVect,
-    convertToWKT
+    selectedVect
   }
 }
 
