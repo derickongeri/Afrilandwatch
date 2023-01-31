@@ -54,7 +54,7 @@ export default function setSelectedVect() {
     const parsed = JSON.parse(JSON.stringify(vectLayer))
     const wkt = convertToWK(parsed)
 
-    console.log(wkt)
+    // console.log(wkt)
 
     return wkt
   }

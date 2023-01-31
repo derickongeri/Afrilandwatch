@@ -421,6 +421,7 @@ import baselayers from "./Modals/baselayers";
 
 import setSelectedVect from "./Modals/fetchVectors";
 import Legend from "./Modals/legend.vue";
+import { axios } from "src/boot/axios.js";
 
 export default defineComponent({
   components: {
@@ -452,7 +453,7 @@ export default defineComponent({
       customVectLayer = ref(null),
       currentFeatureLayer = ref(null),
       subRegionBoundaries = ref(null),
-      rasterYear = ref(null)
+      rasterYear = ref(null);
 
     let drawingTools = ref(false);
 
@@ -601,6 +602,8 @@ export default defineComponent({
 
         let vectLayer = await selectedVect(); //await axios.get(wfsURL);
 
+        let wktLayer = convertToWKT();
+
         currentVectLayer.value = L.mask(vectLayer, {
           fillOpacity: 0,
           fillColor: "#424242",
@@ -711,9 +714,30 @@ export default defineComponent({
           map.value.removeLayer(currentRasterLayer.value);
         }
 
+        let vectName = null;
+        let adminLevel = null;
+        let countryName = null;
+
+        if (store.getselectedSubRegion) {
+          vectName = store.getselectedSubRegion;
+          adminLevel = 1;
+          countryName = store.getselectedCountry
+        } else if (store.getselectedCountry) {
+          vectName = store.getselectedCountry;
+          adminLevel = 0;
+          countryName = countryName
+        } else {
+          vectName = store.getselectedRegion;
+          adminLevel = null;
+        }
+
+        const sldRequest = await axios.get(`http://127.0.0.1:5000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`)
+
+        console.log(sldRequest.data[0].sldName)
+
         const wmsURL = "http://78.141.234.158/geoserver/Mislanddata/wms";
 
-        rasterYear.value = store.getYearSelected
+        rasterYear.value = store.getYearSelected;
 
         currentRasterLayer.value = L.tileLayer
           .wms(wmsURL, {
@@ -724,7 +748,7 @@ export default defineComponent({
             transparent: "true",
             opacity: 1,
             tilematrixSet: "EPSG:4326",
-            styles: "Mislanddata:testStyle6",
+            styles: `Mislanddata:${sldRequest.data[0].sldName}`,
             crs: L.CRS.EPSG4326,
             // env: 'cropShape:POLYGON((36.60924206010921 0.5323032302736124, 36.60924206010921 -1.7062098171759033, 38.54372792153049 -1.7062098171759033, 38.54372792153049 0.5323032302736124, 36.60924206010921 0.5323032302736124))'
           })
@@ -787,18 +811,25 @@ export default defineComponent({
     });
 
     watch(selecteVector, () => {
+      Loading.show({
+          spinner: QSpinnerOval,
+          spinnerSize: "xl",
+          message: "Loading...",
+        });
       setCurrentVector();
       setRegionsWithin();
+      setRasterLayer();
+      Loading.hide()
     });
 
     const setRasterYear = computed(() => {
-      return store.getYearSelected
-    })
+      return store.getYearSelected;
+    });
 
-    watch(setRasterYear, ()=>{
-      console.log(`year changed to ${store.getYearSelected}`)
+    watch(setRasterYear, () => {
+      console.log(`year changed to ${store.getYearSelected}`);
       setRasterLayer();
-    })
+    });
 
     onMounted(() => {
       //leafletRouting();
