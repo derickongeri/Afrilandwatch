@@ -45,6 +45,10 @@ export const useVectorStore = defineStore({
       this.subRegionNames = data.features;
     },
 
+    setCustomGeometryData(layer){
+      
+    },
+
     setRegionSelected(val) {
       this.selectedRegion = val;
     },

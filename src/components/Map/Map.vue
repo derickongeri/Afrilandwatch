@@ -399,12 +399,15 @@ import {
 } from "vue";
 import { useVectorStore } from "../../stores/vector_store/index.js";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+// import "leaflet-draw";
+import "leaflet-draw/dist/leaflet.draw-src";
+import "leaflet-draw/dist/leaflet.draw-src.css";
+import "@geoman-io/leaflet-geoman-free";
+import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 import "./Modals/mask";
 import "./Modals/smoothWheelZoom";
 import "./WMTS";
-import "leaflet/dist/leaflet.css";
-import "@geoman-io/leaflet-geoman-free";
-import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 import { Loading, QSpinnerOval, QSpinnerFacebook } from "quasar";
 import baselayers from "./Modals/baselayers";
 
@@ -436,6 +439,8 @@ export default defineComponent({
       opacityValue = ref(10),
       currentRasterLayer = ref(null),
       currentVectLayer = ref(null),
+      // editableLayer = ref(null),
+      customGeometry = ref(null),
       currentFeatureLayer = ref(null),
       rasterYear = ref(null);
 
@@ -445,7 +450,7 @@ export default defineComponent({
     let mapLabels = ref(null);
     let selectedPopupFeature = ref(null);
 
-    const setLeafletMap = function () {
+    const setLeafletMap = async function () {
       const { osmTiles, darkMap, satellite, USGS_Imagery } = baselayers;
 
       console.log(osmTiles);
@@ -467,10 +472,9 @@ export default defineComponent({
         scrollWheelZoom: false,
         smoothWheelZoom: true,
         smoothSenesitivity: 0.5,
-        //maxBounds: bounds,
         minZoom: 3,
         maxZoom: 17,
-        layers: [USGS_Imagery],
+        layers: [satellite],
       });
 
       map.value.scrollWheelZoom = true;
@@ -491,6 +495,7 @@ export default defineComponent({
       );
       layerControl[0].style.visibility = "hidden";
       // statisticsPanel.value = true;
+      setUpGeoman();
     };
 
     const zoom_in = function () {
@@ -516,99 +521,111 @@ export default defineComponent({
       const selected_base_map = baseMaps.value[basemap];
       map.value.addLayer(selected_base_map);
       selected_base_map.bringToFront();
-      // const index = Object.keys(baseMaps.value).indexOf(basemap);
-
-      // let layerControlElement = document.getElementsByClassName(
-      //   "leaflet-control-layers"
-      // )[0];
-      // layerControlElement.getElementsByTagName("input")[index].click();
       currentRasterLayer.value.bringToFront();
       currentVectLayer.value.bringToFront();
     };
 
+    const setUpGeoman = function () {
+      let editableLayer = new L.FeatureGroup();
+      map.value.addLayer(editableLayer);
+
+      // Initialise the draw control and pass it the FeatureGroup of editable layers
+      map.value.addControl(
+        new L.Control.Draw({
+          position: "topright",
+          draw: {
+            polygon: {
+              allowIntersection: false, // Restricts shapes to simple polygons
+              drawError: {
+                color: "#e1e100", // Color the shape will turn when intersects
+                message:
+                  "<strong>Polygon draw does not allow intersections!<strong> (allowIntersection: false)", // Message that will show when intersect
+              },
+              shapeOptions: {
+                fillOpacity: 0,
+                fillColor: "#424242",
+                weight: 1.5,
+                color: "#484c4d",
+              },
+            },
+            rectangle: {
+              shapeOptions: {
+                color: "#bada55",
+              },
+            },
+            circle: false,
+            marker: false,
+            polyline: false,
+            circlemarker: false,
+          },
+          edit: {
+            featureGroup: editableLayer, //REQUIRED!!
+            // remove: true,
+          },
+        })
+      );
+
+      map.value.on(L.Draw.Event.CREATED, function (e) {
+        var type = e.layerType,
+          layer = e.layer;
+
+        if (type === "polygon") {
+          layer.bindPopup("A popup!");
+        }
+        //add area in ha to the draw polygon
+        editableLayer.addLayer(layer);
+        drawCustomPolygon(layer);
+        setRasterLayer();
+      });
+
+      map.value.on("draw:deleted", function (e) {
+        map.value.removeLayer(currentRasterLayer.value);
+        map.value.removeLayer(customGeometry.value);
+        customGeometry.value = null;
+        setCurrentVector();
+        setRasterLayer();
+      });
+    };
+
     const toggleDrawingTools = function () {
-      drawingTools.value = !drawingTools.value;
-      if (drawingTools.value) {
-        map.value.pm.addControls({
-          position: "topleft",
-          drawRectangle: false,
-          drawPolygon: true,
-          drawPolyline: false,
-          drawCircle: false,
-          drawCircleMarker: false,
-          cutPolygon: false,
-          rotateMode: false,
-          drawText: false,
-          editMode: false,
-          removalMode: true,
-          drawMarker: false,
-          oneBlock: true,
-        });
+      const box = document.getElementsByClassName(
+        "leaflet-top leaflet-right"
+      )[0];
+      if (box.style.display === "none") {
+        box.style.display = "block";
       } else {
-        map.value.pm.removeControls();
+        box.style.display = "none";
       }
     };
 
-    const drawCustomPolygon = function () {
-      // let fgFun = function () {
-      //   // eslint-disable-next-line no-undef
-      //   var fg = L.featureGroup();
-      //   map2.eachLayer((layer) => {
-      //     // eslint-disable-next-line no-undef
-      //     if (layer instanceof L.Path || layer instanceof L.Marker) {
-      //       fg.addLayer(layer);
-      //     }
-      //   });
-      //   return fg.toGeoJSON();
-      // };
-      //new button
-      //  map.value.pm.Toolbar.copyDrawControl('Line', {
-      //       name: 'SoonToBeArrow',
-      //       block: 'draw',
-      //       title: 'Display text on hover button',
-      //       actions: [
-      //           // uses the default 'cancel' action
-      //           'cancel',
-      //       ],
-      //   });
+    const drawCustomPolygon = function (layer) {
+      if (currentVectLayer.value) map.value.removeLayer(currentVectLayer.value);
+      if (customGeometry.value) customGeometry.value = null;
+      if (currentRasterLayer) map.value.removeLayer(currentRasterLayer.value);
+      const geojson = JSON.stringify(layer.toGeoJSON().geometry);
+      console.log(geojson);
+      customGeometry.value = layer;
+      // customGeometry.value.addTo(map.value).bringToFront();
+      map.value.fitBounds(customGeometry.value.getBounds(), {
+        setZoom: 2,
+      });
     };
 
     const setCurrentVector = async function () {
       try {
+        customGeometry.value = null;
         if (currentVectLayer.value) {
           map.value.removeLayer(currentVectLayer.value);
         }
 
         let vectLayer = await selectedVect(); //await axios.get(wfsURL);
 
-        currentVectLayer.value = L.geoJSON(vectLayer, {
-          fillOpacity: 0,
-          fillColor: "#424242",
-          weight: 1.5,
-          color: "#484c4d",
-        });
-
-        currentVectLayer.value.addTo(map.value);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const setRegionsWithin = async function () {
-      try {
-        let vectLayer = await selectedVect();
-
-        if (currentFeatureLayer.value) {
-          map.value.removeLayer(currentFeatureLayer.value);
-        }
-
-        currentFeatureLayer.value = L.geoJSON([vectLayer], {
+        currentVectLayer.value = L.geoJSON([vectLayer], {
           style: {
-            weight: 0,
-            opacity: 1,
-            color: "white",
-            dashArray: "3",
             fillOpacity: 0,
+            fillColor: "#424242",
+            weight: 1.5,
+            color: "#484c4d",
           },
           onEachFeature: function (feature, layer) {
             feature = layer
@@ -640,9 +657,8 @@ export default defineComponent({
           },
         });
 
-        currentFeatureLayer.value.addTo(map.value);
-
-        map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
+        currentVectLayer.value.addTo(map.value);
+        map.value.fitBounds(currentVectLayer.value.getBounds(), {
           // paddingBottomRight: [0, 0],
           setZoom: 2,
         });
@@ -652,10 +668,17 @@ export default defineComponent({
     };
 
     const resetZoomLevel = function () {
-      map.value.fitBounds(currentFeatureLayer.value.getBounds(), {
-        // paddingBottomRight: [600, 0],
-        setZoom: 2,
-      });
+      if (customGeometry.value) {
+        map.value.fitBounds(customGeometry.value.getBounds(), {
+          //
+          setZoom: 2,
+        });
+      } else {
+        map.value.fitBounds(currentVectLayer.value.getBounds(), {
+          // paddingBottomRight: [600, 0],
+          setZoom: 2,
+        });
+      }
     };
 
     const handle_opacity = function () {
@@ -673,7 +696,7 @@ export default defineComponent({
         Loading.show({
           spinner: QSpinnerFacebook,
           spinnerSize: "xl",
-          message: "Loading...",
+          message: "Loading map data...",
         });
 
         if (currentRasterLayer.value) {
@@ -691,15 +714,31 @@ export default defineComponent({
         } else if (store.getselectedCountry) {
           vectName = store.getselectedCountry;
           adminLevel = 0;
-          countryName = countryName;
         } else {
           vectName = store.getselectedRegion;
           adminLevel = null;
         }
 
-        const sldRequest = await axios.get(
-          `http://127.0.0.1:5000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`
-        );
+        let sldRequest = null;
+
+        if (!customGeometry.value) {
+          sldRequest = await axios.get(
+            `http://78.141.234.158:3000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`
+          );
+        } else {
+          const geojson = JSON.stringify(
+            customGeometry.value.toGeoJSON().geometry
+          );
+          sldRequest = await axios.post(
+            "http://127.0.0.1:3000/api/rasters/lulc/cropcustom",
+            geojson,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        }
 
         // console.log(sldRequest.data[0].sldName);
 
@@ -709,7 +748,7 @@ export default defineComponent({
 
         currentRasterLayer.value = L.tileLayer.wms(wmsURL, {
           layers: `Mislanddata:Landcover${rasterYear.value}`,
-          "layer-type": "overlay",
+          // "layer-type": "overlay",
           // CQL_FILTER: "layer = " + "'" + region + "'",
           format: "image/png",
           transparent: "true",
@@ -717,7 +756,6 @@ export default defineComponent({
           tilematrixSet: "EPSG:4326",
           styles: `Mislanddata:${sldRequest.data[0].sldName}`,
           crs: L.CRS.EPSG4326,
-          // env: 'cropShape:POLYGON((36.60924206010921 0.5323032302736124, 36.60924206010921 -1.7062098171759033, 38.54372792153049 -1.7062098171759033, 38.54372792153049 0.5323032302736124, 36.60924206010921 0.5323032302736124))'
         });
 
         currentRasterLayer.value.addTo(map.value).bringToFront();
@@ -780,13 +818,11 @@ export default defineComponent({
     });
 
     watch(selecteVector, () => {
-      // Loading.show({
-      //   spinner: QSpinnerOval,
-      //   spinnerSize: "xl",
-      //   message: "Loading...",
-      // });
       setCurrentVector();
-      setRegionsWithin();
+      setRasterLayer();
+    });
+
+    watch(customGeometry.value, () => {
       setRasterLayer();
     });
 
@@ -800,16 +836,9 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      Loading.show({
-        spinner: QSpinnerOval,
-        spinnerSize: "xl",
-        message: "Loading...",
-      });
       setLeafletMap();
       setCurrentVector();
-      setRegionsWithin();
       setRasterLayer();
-      Loading.hide();
     });
 
     const openCloseStats = function () {
@@ -942,5 +971,33 @@ export default defineComponent({
   z-index: 800;
   pointer-events: visiblePainted;
   pointer-events: auto;
+}
+
+// overwrite the leaflet top control
+.leaflet-top {
+  margin: 170px 6px;
+  display: none;
+}
+
+//
+.custom-map-tools-section {
+  position: absolute;
+  right: 0;
+  margin: 50px 20px 0px 0px;
+  z-index: 500;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+//custom draw button
+.custom-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 500;
+  border-radius: 10px;
+  padding: 7px;
+  background-color: white;
+  cursor: pointer;
 }
 </style>
