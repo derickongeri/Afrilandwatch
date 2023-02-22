@@ -572,6 +572,12 @@ export default defineComponent({
         if (type === "polygon") {
           layer.bindPopup("A popup!");
         }
+
+        const geojson = JSON.stringify(
+            layer.toGeoJSON().geometry
+          )
+
+        store.setCustomGeometryData(geojson)
         //add area in ha to the draw polygon
         editableLayer.addLayer(layer);
         drawCustomPolygon(layer);
@@ -582,6 +588,7 @@ export default defineComponent({
         map.value.removeLayer(currentRasterLayer.value);
         map.value.removeLayer(customGeometry.value);
         customGeometry.value = null;
+        store.setCustomGeometryData()
         setCurrentVector();
         setRasterLayer();
       });
@@ -726,12 +733,9 @@ export default defineComponent({
             `http://78.141.234.158:3000/api/rasters/lulc/crop/shape?vectID=${vectName}&adminID=${adminLevel}&admin0ID=${countryName}`
           );
         } else {
-          const geojson = JSON.stringify(
-            customGeometry.value.toGeoJSON().geometry
-          );
           sldRequest = await axios.post(
             "http://127.0.0.1:3000/api/rasters/lulc/cropcustom",
-            geojson,
+            store.customGeojson,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -740,16 +744,12 @@ export default defineComponent({
           );
         }
 
-        // console.log(sldRequest.data[0].sldName);
-
         const wmsURL = "http://78.141.234.158/geoserver/Mislanddata/wms";
 
         rasterYear.value = store.getYearSelected;
 
         currentRasterLayer.value = L.tileLayer.wms(wmsURL, {
           layers: `Mislanddata:Landcover${rasterYear.value}`,
-          // "layer-type": "overlay",
-          // CQL_FILTER: "layer = " + "'" + region + "'",
           format: "image/png",
           transparent: "true",
           opacity: 1,

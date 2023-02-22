@@ -11,7 +11,8 @@ export const useVectorStore = defineStore({
     selectedRegion: "Sourth Africa",
     slectedCountry: "",
     selectedSubregion: "",
-    selectedYear: 2010
+    selectedYear: 2010,
+    customGeojson: null
   }),
   getters: {
     getRegionNames: (state) => state.regionNames,
@@ -46,7 +47,8 @@ export const useVectorStore = defineStore({
     },
 
     setCustomGeometryData(layer){
-      
+       this.customGeojson = layer
+       console.log(this.customGeojson, 'in store')
     },
 
     setRegionSelected(val) {
