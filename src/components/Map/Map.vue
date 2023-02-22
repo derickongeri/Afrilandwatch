@@ -588,7 +588,7 @@ export default defineComponent({
         map.value.removeLayer(currentRasterLayer.value);
         map.value.removeLayer(customGeometry.value);
         customGeometry.value = null;
-        store.setCustomGeometryData()
+        store.setCustomGeometryData("")
         setCurrentVector();
         setRasterLayer();
       });
